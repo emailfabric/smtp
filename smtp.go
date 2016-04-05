@@ -10,7 +10,7 @@ import (
 
 var (
     ConnectTimeout  =  5 * time.Minute // shortened in some mtas, the OS may impose shorter timeouts
-    GreetingTimeout =  5 * time.Minute
+    //GreetingTimeout =  5 * time.Minute
 )
 
 type Client struct {
@@ -51,7 +51,8 @@ func NewClient(conn net.Conn, serverName string) (*Client, error) {
 	// 220 greeting message.  Many receiver-SMTPs will accept a
 	// TCP connection but delay delivery of the 220 message until
 	// their system load will permit more mail to be processed.
-	conn.SetReadDeadline(time.Now().Add(GreetingTimeout))
+	
+	//conn.SetReadDeadline(time.Now().Add(GreetingTimeout))
     c, err := smtp.NewClient(conn, serverName)
     if err != nil {
         return nil, err
