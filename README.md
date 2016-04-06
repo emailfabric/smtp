@@ -43,20 +43,20 @@ To connect to an MX from a specific local IP address:
 
 To initiate a session, using "opportunistic" TLS and no authentication:
 
-	err = client.Session("mail.example.com", "", nil)
+	err := client.Session("mail.example.com", "", nil)
 	
-To start a transaction:
+To start a transaction, using pipelining if available:
 
-	wc, tranErr := client.Transaction(sender, recipients)
+	wc, err := client.Transaction(sender, recipients)
 
-The returned error can indicate that some recipients failed and others were accepted.
-	
-To send the message:
+If multiple recipients are specified, some can be rejected and some can be accepted. If the transaction succeeds and at least one recipient was accepted a non-nil io.WriteCloser is returned. A non-nil err indicates that the transaction failed, or that at least one recipient was rejected.
 
-	_, err = wc.Write(msg)
-	
-To send the end-of-message sequence: 
+To send the message from an io.Reader:
 
+	_, err := io.Copy(wc, reader)
+	if err != nil {
+		return err
+	}
     err = wc.Close()
 
 Then another transaction can be started or the session can be terminated:
