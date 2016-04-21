@@ -1,12 +1,14 @@
 # smtp
 
+[![](https://godoc.org/github.com/emailfabric/smtp?status.svg)](http://godoc.org/github.com/emailfabric/smtp)
+
 Go library that improves and extends net/smtp.
 
 The SMTP client in net/smtp already supports a number of features:
 
 * Support for [PLAIN](https://tools.ietf.org/html/rfc4616) authentication.
 * Support for [CRAM-MD5](https://tools.ietf.org/html/rfc2195) authentication.
-* Support for STARTTLS.
+* Support for [STARTTLS](https://www.ietf.org/rfc/rfc3207) encryption.
 
 But it also misses some features which limit it's application to simple forwarding scenarios. 
 
@@ -26,6 +28,8 @@ TODOS:
 * Do not send HELO after EHLO with 4XX error.
 * Command-response timeouts according to RFC.
 * More context information in errors.
+* Issue RSET before next transaction if last transaction failed.
+* Less picky about response codes, the first digit is conclusive.
 
 ## Usage
 
