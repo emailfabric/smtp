@@ -12,7 +12,7 @@ import (
 )
 
 var (
-    // ConnectTimeout is shortened in some mtas, the OS may also impose shorter timeouts
+	// ConnectTimeout is shortened in some mtas, the OS may also impose shorter timeouts
 	ConnectTimeout = 5 * time.Minute
 	//GreetingTimeout =  5 * time.Minute
 )

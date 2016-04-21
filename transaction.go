@@ -55,13 +55,12 @@ func (m MultiError) merge(err error) error {
 func MergeError(prevErr error, newErr error) error {
 	if me, ok := prevErr.(MultiError); ok {
 		return me.merge(newErr)
-	} else {
-		// return previous error if not nil
-		if prevErr == nil {
-			return newErr
-		}
-		return prevErr
 	}
+	// return previous error if not nil
+	if prevErr == nil {
+		return newErr
+	}
+	return prevErr
 }
 
 // Transaction starts a new transaction.
