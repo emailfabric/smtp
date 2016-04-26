@@ -6,6 +6,7 @@ package smtp
 import (
 	"net"
 	"net/smtp"
+	"net/textproto"
 	"os"
 	"strings"
 	"time"
@@ -94,4 +95,12 @@ func SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) er
 
 	c.Quit()
 	return tranErr
+}
+
+// IsPermanent returns true if err is a reply with 5XX status code
+func IsPermanent(err error) bool {
+    if tpe, ok := err.(*textproto.Error); ok {
+        return tpe.Code / 100 == 5
+    }
+    return false
 }

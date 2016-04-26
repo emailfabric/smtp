@@ -118,10 +118,11 @@ func (c *Client) pipelining(from string, to []string) (io.WriteCloser, error) {
 	// step 1: send commands in one stroke
 	//
 
-	cmdStr := "MAIL FROM:<%s>\r\n"
+	cmdStr := "MAIL FROM:<%s>"
 	if ok, _ := c.Extension("8BITMIME"); ok {
 		cmdStr += " BODY=8BITMIME"
 	}
+	cmdStr += "\r\n"
 
 	// textproto.Conn#Cmd is avoided because it expects that textproto.Pipeline is used
 	// textproto.Conn#PrintfLine is avoided for MAIL and RCPT because it does unneeded flush
