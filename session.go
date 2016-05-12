@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/smtp"
+	
+	"github.com/pkg/errors"	
 )
 
 // Session initiates an SMTP session.
@@ -14,7 +16,7 @@ func (c *Client) Session(localName string, serverName string, auth smtp.Auth) er
 
 	err := c.Hello(localName)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "EHLO command failed")
 	}
 
 	if ok, _ := c.Extension("STARTTLS"); ok {
@@ -30,7 +32,7 @@ func (c *Client) Session(localName string, serverName string, auth smtp.Auth) er
 			// If the client receives the 454 response, the client must decide
 			// whether or not to continue the SMTP session.  Such a decision is
 			// based on local policy.
-			return err
+			return errors.Wrap(err, "tls connection failed")
 		}
 		// handshake is done at first I/O, do it now?
 	}
@@ -39,7 +41,7 @@ func (c *Client) Session(localName string, serverName string, auth smtp.Auth) er
 		if ok, _ := c.Extension("AUTH"); ok {
 			err := c.Auth(auth)
 			if err != nil {
-				return err
+				return errors.Wrap(err, "authentication failed")
 			}
 		} else {
 			return fmt.Errorf("authentication requested but not supported")

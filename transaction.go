@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"net/textproto"
+
+	"github.com/pkg/errors"
 )
 
 // MultiError is returned by batch operations when there are errors with
@@ -77,14 +79,15 @@ func (c *Client) Transaction(from string, to []string) (io.WriteCloser, error) {
 
 	err := c.Mail(from)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "MAIL command failed")
 	}
 
 	rcptErr := make(MultiError, len(to))
 	var failed int
 	for i, addr := range to {
-		rcptErr[i] = c.Rcpt(addr)
-		if rcptErr[i] != nil {
+		err := c.Rcpt(addr)
+		if err != nil {
+		    rcptErr[i] = errors.Wrap(err, "RCPT command failed")
 			failed++
 		}
 	}
@@ -97,7 +100,11 @@ func (c *Client) Transaction(from string, to []string) (io.WriteCloser, error) {
 		return nil, rcptErr
 	}
 
-	return c.Data()
+	wc, err := c.Data()
+	if err != nil {
+	    return wc, errors.Wrap(err, "DATA command failed")
+	}
+	return wc, err
 }
 
 type dataCloser struct {
@@ -151,17 +158,24 @@ func (c *Client) pipelining(from string, to []string) (io.WriteCloser, error) {
 	//
 
 	_, _, mailErr := c.Text.ReadResponse(250)
+	if mailErr != nil {
+	    mailErr = errors.Wrap(mailErr, "MAIL command failed")
+	}
 
 	rcptErr := make(MultiError, len(to))
 	var failed int
 	for i := 0; i < len(to); i++ {
-		_, _, rcptErr[i] = c.Text.ReadResponse(25)
-		if rcptErr[i] != nil {
+		_, _, err := c.Text.ReadResponse(25)
+		if err != nil {
+		    rcptErr[i] = errors.Wrap(err, "RCPT command failed")
 			failed++
 		}
 	}
 
 	_, _, dataErr := c.Text.ReadResponse(354)
+	if dataErr != nil {
+	    dataErr = errors.Wrap(dataErr, "DATA command failed")
+	}
 
 	//
 	// step 3: check replies

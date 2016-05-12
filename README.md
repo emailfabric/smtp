@@ -21,13 +21,13 @@ This library adds the following features:
 * Provide Session() and Transaction() members as intermediate level API.
 * Support for [PIPELINING](https://tools.ietf.org/html/rfc2920) extension.
 * Send DATA if at least one RCPT is accepted instead of returning after the first failed recipient.
+* Context information in SMTP errors showing the stage of the transaction.
 
 TODOS:
 
-* Remove net/smtp dependency for smtp.Auth. 
+* Replace smtp.Auth so callers don't have to include net/smtp. 
 * Do not send HELO after EHLO with 4XX error.
 * Command-response timeouts according to RFC.
-* More context information in errors.
 * Issue RSET before next transaction if last transaction failed.
 * Less picky about response codes, the first digit is conclusive.
 

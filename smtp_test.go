@@ -182,10 +182,13 @@ func TestSendMailWithRecipientErrors(t *testing.T) {
 	if me[0] != nil {
 		t.Fatalf("%T: %v", me[0], me[0])
 	}
-	if strings.HasPrefix(me[1].Error(), "452") == false {
+	if me[1] == nil || me[2] == nil {
+		t.Fatalf("Expected error after RCPT")
+	}
+	if strings.Contains(me[1].Error(), "452") == false {
 		t.Fatalf("%T: %v", me[1], me[1])
 	}
-	if strings.HasPrefix(me[2].Error(), "550") == false {
+	if strings.Contains(me[2].Error(), "550") == false {
 		t.Fatalf("%T: %v", me[2], me[2])
 	}
 }
