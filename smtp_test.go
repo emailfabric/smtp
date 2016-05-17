@@ -3,6 +3,7 @@ package smtp
 import (
 	//"bytes"
 	"bufio"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"net"
@@ -54,7 +55,7 @@ func (c *testConn) expect(cmd string) {
 	}
 	if strings.HasPrefix(line, cmd) == false {
 		//fmt.Printf(c.b.String())
-		c.t.Errorf("Expected %s but got %s", cmd, line[0:len(cmd)])
+		c.t.Errorf("Expected %s... but got %s", cmd, line)
 	}
 }
 
@@ -192,3 +193,31 @@ func TestSendMailWithRecipientErrors(t *testing.T) {
 		t.Fatalf("%T: %v", me[2], me[2])
 	}
 }
+
+func TestSendMailWithPlainAuth(t *testing.T) {
+	server(t, func(c *testConn) {
+		c.reply("220 localhost ESMTP")
+		c.expect("EHLO")
+		c.reply("250-localhost")
+		c.reply("250 AUTH PLAIN")
+		c.expect("AUTH PLAIN " + base64.StdEncoding.EncodeToString([]byte("\x00mike@sender.com\x00password")))
+		c.reply("235 OK, you are now authenticated")	
+		c.expect("MAIL")
+		c.reply("250 OK")
+		c.expect("RCPT")
+		c.reply("250 OK")
+		c.expect("DATA")
+		c.reply("354 End data with <CR><LF>.<CR><LF>")
+		c.readData()
+		c.reply("250 OK")
+		c.expect("QUIT")
+		c.reply("221 localhost closing connection")
+	})
+
+    auth := PlainAuth("", "mike@sender.com", "password", "127.0.0.1")
+	err := SendMail(hostport, auth, "mike@sender.com", []string{"john@receiver.com"}, message)
+	if err != nil {
+		t.Fatalf("%T: %v", err, err)
+	}
+}
+

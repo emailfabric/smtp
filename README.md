@@ -25,7 +25,6 @@ This library adds the following features:
 
 TODOS:
 
-* Replace smtp.Auth so callers don't have to include net/smtp. 
 * Do not send HELO after EHLO with 4XX error.
 * Command-response timeouts according to RFC.
 * Issue RSET before next transaction if last transaction failed.
@@ -67,6 +66,8 @@ Then another transaction can be started or the session can be terminated:
 
 	client.Quit()
 	
-    
+## License
+
+MIT
 
 

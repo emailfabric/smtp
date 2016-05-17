@@ -15,7 +15,7 @@ import (
 var (
 	// ConnectTimeout is shortened in some mtas, the OS may also impose shorter timeouts
 	ConnectTimeout = 5 * time.Minute
-	//GreetingTimeout =  5 * time.Minute
+	GreetingTimeout =  5 * time.Minute
 )
 
 // Client embeds a smtp.Client and provides additional member functions
@@ -50,14 +50,16 @@ func DialFrom(addr string, localIP net.IP) (*Client, error) {
 	return NewClient(conn, serverName)
 }
 
-// NewClient waits for the 220 banner greeting and returns a new Client.
+// NewClient waits for the 220 banner greeting and returns a new Client using 
+// an existing connection and host as a server name to be used when authenticating.
 func NewClient(conn net.Conn, serverName string) (*Client, error) {
 
-	//conn.SetReadDeadline(time.Now().Add(GreetingTimeout))
+	conn.SetReadDeadline(time.Now().Add(GreetingTimeout))
 	c, err := smtp.NewClient(conn, serverName)
 	if err != nil {
 		return nil, err
 	}
+	conn.SetReadDeadline(time.Time{})  // remove deadline
 	return &Client{c}, nil
 }
 
@@ -65,7 +67,7 @@ func NewClient(conn net.Conn, serverName string) (*Client, error) {
 // possible, authenticates with the optional mechanism a if possible,
 // and then sends an email from address from, to addresses to, with
 // message msg.
-func SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) error {
+func SendMail(addr string, auth smtp.Auth, from string, to []string, msg []byte) error {
 
 	c, err := Dial(addr)
 	if err != nil {
@@ -74,7 +76,7 @@ func SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) er
 	defer c.Close() // c.Quit()?
 
 	hostname, _ := os.Hostname()
-	err = c.Session(hostname, "", a)
+	err = c.Session(hostname, "", auth)
 	if err != nil {
 		return err
 	}
@@ -103,4 +105,21 @@ func IsPermanent(err error) bool {
         return tpe.Code / 100 == 5
     }
     return false
+}
+
+// PlainAuth returns an Auth that implements the PLAIN authentication
+// mechanism as defined in RFC 4616.
+// The returned Auth uses the given username and password to authenticate
+// on TLS connections to host and act as identity. Usually identity will be
+// left blank to act as username.
+func PlainAuth(identity, username, password, host string) smtp.Auth {
+	return smtp.PlainAuth(identity, username, password, host)
+}
+
+// CRAMMD5Auth returns an Auth that implements the CRAM-MD5 authentication
+// mechanism as defined in RFC 2195.
+// The returned Auth uses the given username and secret to authenticate
+// to the server using the challenge-response mechanism.
+func CRAMMD5Auth(username, secret string) smtp.Auth {
+	return smtp.CRAMMD5Auth(username, secret)
 }
