@@ -32,11 +32,11 @@ TODOS:
 
 ## Usage
 
-### Forward one message
+### Deliver one message
 
-To connect to an MX, forward a message, and disconnect:
+To connect to an MX, deliver a message, and disconnect:
 
-	err = smtp.SendMail(mx, sender, recipients, message, nil)
+	err = smtp.SendMail(mx, nil, sender, recipients, message, nil)
 	
 ### Bulk email delivery
 

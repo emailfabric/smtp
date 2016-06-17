@@ -15,7 +15,7 @@ import (
 var (
 	// ConnectTimeout is shortened in some mtas, the OS may also impose shorter timeouts
 	ConnectTimeout = 5 * time.Minute
-	GreetingTimeout =  5 * time.Minute
+	GreetingTimeout = 5 * time.Minute
 )
 
 // Client embeds a smtp.Client and provides additional member functions
@@ -63,10 +63,10 @@ func NewClient(conn net.Conn, serverName string) (*Client, error) {
 	return &Client{c}, nil
 }
 
-// SendMail connects to the server at addr, switches to TLS if
-// possible, authenticates with the optional mechanism a if possible,
-// and then sends an email from address from, to addresses to, with
-// message msg.
+// SendMail connects to the server at addr, switches to TLS if possible, 
+// authenticates with the optional mechanism a if possible, and then sends 
+// an email from address from, to addresses to, with message msg. 
+// The addr must include a port, as in "mail.example.com:smtp".
 func SendMail(addr string, auth smtp.Auth, from string, to []string, msg []byte) error {
 
 	c, err := Dial(addr)

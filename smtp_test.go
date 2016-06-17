@@ -194,7 +194,7 @@ func TestSendMailWithRecipientErrors(t *testing.T) {
 	}
 }
 
-func TestSendMailWithPlainAuth(t *testing.T) {
+func TestSendMailWithAuth(t *testing.T) {
 	server(t, func(c *testConn) {
 		c.reply("220 localhost ESMTP")
 		c.expect("EHLO")
@@ -215,6 +215,35 @@ func TestSendMailWithPlainAuth(t *testing.T) {
 	})
 
     auth := PlainAuth("", "mike@sender.com", "password", "127.0.0.1")
+	err := SendMail(hostport, auth, "mike@sender.com", []string{"john@receiver.com"}, message)
+	if err != nil {
+		t.Fatalf("%T: %v", err, err)
+	}
+}
+
+func TestSendMailWithCramMD5Auth(t *testing.T) {
+	server(t, func(c *testConn) {
+		c.reply("220 localhost ESMTP")
+		c.expect("EHLO")
+		c.reply("250-localhost")
+		c.reply("250 AUTH CRAM-MD5")
+		c.expect("AUTH CRAM-MD5")
+		c.reply("334 " + base64.StdEncoding.EncodeToString([]byte("<123456.1322876914@testserver>")))
+		c.expect(base64.StdEncoding.EncodeToString([]byte("user 287eb355114cf5c471c26a875f1ca4ae")))
+		c.reply("235 OK, you are now authenticated")	
+		c.expect("MAIL")
+		c.reply("250 OK")
+		c.expect("RCPT")
+		c.reply("250 OK")
+		c.expect("DATA")
+		c.reply("354 End data with <CR><LF>.<CR><LF>")
+		c.readData()
+		c.reply("250 OK")
+		c.expect("QUIT")
+		c.reply("221 localhost closing connection")
+	})
+
+    auth := CRAMMD5Auth("user", "pass")
 	err := SendMail(hostport, auth, "mike@sender.com", []string{"john@receiver.com"}, message)
 	if err != nil {
 		t.Fatalf("%T: %v", err, err)
